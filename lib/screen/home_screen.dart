@@ -1,6 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shopping_list_app/data/categories.dart';
 import 'package:shopping_list_app/models/grocery_item.dart';
 import 'package:shopping_list_app/screen/new_item_screen.dart';
+import 'package:http/http.dart' as http;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,14 +14,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<GroceryItem> _groceryItems = [];
+  List<GroceryItem> _groceryItems = [];
 
+  @override
+  void initState() {
+    super.initState();
+    // _loadItem();
+  }
+
+  
   void _addItem() async {
-    final newGroceryItem = await Navigator.push(context,
+    final item = await Navigator.push(context,
         MaterialPageRoute(builder: (context) => const NewItemScreen()));
 
     setState(() {
-      _groceryItems.add(newGroceryItem);
+      _groceryItems.add(item);
     });
   }
 
