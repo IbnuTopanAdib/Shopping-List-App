@@ -16,6 +16,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<GroceryItem> _groceryItems = [];
   bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -50,7 +51,11 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
         });
       }
-    } else {}
+    } else {
+      setState(() {
+        _errorMessage = "Error Fetching items";
+      });
+    }
   }
 
   void _addItem() async {
@@ -65,10 +70,23 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void removeGroceryItem(GroceryItem groceryItem) {
+  void removeGroceryItem(GroceryItem groceryItem) async {
+    final index = _groceryItems.indexOf(groceryItem);
     setState(() {
       _groceryItems.remove(groceryItem);
     });
+    final url = Uri.https(
+        'shopping-list-7e6d2-default-rtdb.asia-southeast1.firebasedatabase.app',
+        'shopping-list/${groceryItem.id}.json');
+
+    final response = await http.delete(url);
+
+    if (response.statusCode >= 400) {
+      _errorMessage = 'Error ${response.reasonPhrase}';
+      setState(() {
+        _groceryItems.insert(index, groceryItem);
+      });
+    }
   }
 
   @override
@@ -79,6 +97,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (_isLoading) {
       content = const Center(child: CircularProgressIndicator());
+    }
+
+    if (_errorMessage != null) {
+      content = Center(
+        child: Text(_errorMessage!),
+      );
     }
     if (_groceryItems.isNotEmpty) {
       content = ListView.builder(
