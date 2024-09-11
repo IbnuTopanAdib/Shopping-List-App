@@ -55,6 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final item = await Navigator.push(context,
         MaterialPageRoute(builder: (context) => const NewItemScreen()));
 
+    if (item == null) {
+      return;
+    }
     setState(() {
       _groceryItems.add(item);
     });
