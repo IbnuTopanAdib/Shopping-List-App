@@ -19,10 +19,38 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // _loadItem();
+    _loadItem();
   }
 
-  
+  void _loadItem() async {
+    final List<GroceryItem> loadedItems = [];
+    final url = Uri.https(
+        'shopping-list-7e6d2-default-rtdb.asia-southeast1.firebasedatabase.app',
+        'shopping-list.json');
+
+    final response =
+        await http.get(url, headers: {'Content-Type': 'application/json'});
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> shopListItems = jsonDecode(response.body);
+      for (final item in shopListItems.entries) {
+        final category = categories.entries.firstWhere(
+          (catItem) {
+            return catItem.value.title == item.value['category'];
+          },
+        ).value;
+        loadedItems.add(GroceryItem(
+            id: item.key,
+            name: item.value['name'],
+            quantity: item.value['quantity'],
+            category: category));
+        setState(() {
+          _groceryItems = loadedItems;
+        });
+      }
+    } else {}
+  }
+
   void _addItem() async {
     final item = await Navigator.push(context,
         MaterialPageRoute(builder: (context) => const NewItemScreen()));
