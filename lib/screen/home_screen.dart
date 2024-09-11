@@ -15,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<GroceryItem> _groceryItems = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -46,6 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
             category: category));
         setState(() {
           _groceryItems = loadedItems;
+          _isLoading = false;
         });
       }
     } else {}
@@ -71,35 +73,43 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Shopping List App'),
-        actions: [IconButton(onPressed: _addItem, icon: const Icon(Icons.add))],
-      ),
-      body: _groceryItems.isEmpty
-          ? const Center(
-              child: Text('Grocery Items is Empty'),
-            )
-          : ListView.builder(
-              itemCount: _groceryItems.length,
-              itemBuilder: (context, index) {
-                final groceryItem = _groceryItems[index];
-                return Dismissible(
-                  key: ValueKey(groceryItem.id),
-                  onDismissed: (direction) {
-                    removeGroceryItem(groceryItem);
-                  },
-                  child: ListTile(
-                    leading: Container(
-                      height: 24,
-                      width: 24,
-                      color: groceryItem.category.color,
-                    ),
-                    title: Text(groceryItem.name),
-                    trailing: Text(groceryItem.quantity.toString()),
-                  ),
-                );
-              }),
+    Widget content = const Center(
+      child: Text('Grocery Items is Empty'),
     );
+
+    if (_isLoading) {
+      content = const Center(child: CircularProgressIndicator());
+    }
+    if (_groceryItems.isNotEmpty) {
+      content = ListView.builder(
+          itemCount: _groceryItems.length,
+          itemBuilder: (context, index) {
+            final groceryItem = _groceryItems[index];
+            return Dismissible(
+              key: ValueKey(groceryItem.id),
+              onDismissed: (direction) {
+                removeGroceryItem(groceryItem);
+              },
+              child: ListTile(
+                leading: Container(
+                  height: 24,
+                  width: 24,
+                  color: groceryItem.category.color,
+                ),
+                title: Text(groceryItem.name),
+                trailing: Text(groceryItem.quantity.toString()),
+              ),
+            );
+          });
+    }
+
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Shopping List App'),
+          actions: [
+            IconButton(onPressed: _addItem, icon: const Icon(Icons.add))
+          ],
+        ),
+        body: content);
   }
 }
